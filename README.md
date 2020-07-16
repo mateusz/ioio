@@ -2,6 +2,10 @@
 
 The goal is to make a simulator of networked infrastructure, so that people can visually see different failure modes.
 
+![](ioio.png)
+
+Note: not an in-game footage :)
+
 ## Nodes
 
 Nodes are groupings of cores that execute requests.

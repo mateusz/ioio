@@ -108,7 +108,7 @@ func (p *program) parseCtl(rawCtl map[interface{}]interface{}) ctl {
 
 func (p *program) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 	prg := prg{
-		instructions: make([]instruction, len(rawPrg)),
+		instructions: make([]instruction, 0, len(rawPrg)),
 		topLevel:     tl,
 	}
 	for _, stmt := range rawPrg {

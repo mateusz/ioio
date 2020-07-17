@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/faiface/pixel/imdraw"
+
 	"github.com/lafriks/go-tiled"
 
 	"github.com/faiface/pixel"
@@ -28,6 +30,7 @@ var (
 	gameWorld        piksele.World
 	gamePrg          program
 	components       []*component
+	gameBlips        blipList
 )
 
 func main() {
@@ -39,6 +42,8 @@ func main() {
 		fmt.Printf("Error checking working dir: %s\n", err)
 		os.Exit(2)
 	}
+
+	gameBlips = NewBlipList()
 
 	gameWorld = piksele.World{}
 	gameWorld.Load(fmt.Sprintf("%s/../assets/arch2.tmx", workDir))
@@ -93,6 +98,7 @@ func run() {
 	}
 
 	p1view := pixelgl.NewCanvas(pixel.R(0, 0, monW/pixSize, monH/pixSize))
+	blipCanvas := imdraw.New(nil)
 
 	gamePrg.start()
 
@@ -119,12 +125,26 @@ func run() {
 		// Clean up for new frame
 		win.Clear(colornames.Black)
 		p1view.Clear(colornames.Green)
+		blipCanvas.Clear()
 
 		// Draw transformed map
 		mapCanvas.Draw(p1view, pixel.IM.Moved(pixel.Vec{
 			X: mapCanvas.Bounds().W() / 2.0,
 			Y: mapCanvas.Bounds().H() / 2.0,
 		}))
+
+		// Draw blips
+		blips := gameBlips.get()
+		for _, b := range blips {
+			blipCanvas.Color = b.color
+			blipCanvas.Push(gameWorld.TileToVec(b.x, b.y))
+			blipCanvas.Push(gameWorld.TileToVec(b.x, b.y).Add(pixel.Vec{
+				X: 2.0,
+				Y: 2.0,
+			}))
+			blipCanvas.Rectangle(0)
+		}
+		blipCanvas.Draw(p1view)
 
 		// Blit player view
 		p1view.Draw(win, pixel.IM.Moved(pixel.Vec{

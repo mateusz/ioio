@@ -6,3 +6,5 @@ type get struct {
 	ctl      ctl
 	prg      prg
 }
+
+type ctl map[string]string

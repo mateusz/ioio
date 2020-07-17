@@ -5,29 +5,18 @@ import (
 )
 
 type program struct {
-	source    map[interface{}]interface{}
-	top       []topLevel
-	hosts     []host
-	presences []presentable
+	source map[interface{}]interface{}
+	top    []topLevel
+	hosts  []host
 }
 
 type host struct {
 	component component
-	scheduler prgScheduler
+	scheduler hostScheduler
 }
 
-type prgScheduler interface {
+type hostScheduler interface {
 	schedule(int)
-}
-
-type ctl map[string]string
-
-type instruction interface {
-	exec(prgScheduler)
-}
-
-type compute struct {
-	c int
 }
 
 func (p *program) start() {
@@ -35,10 +24,6 @@ func (p *program) start() {
 		log.Printf("[%s] Starting request", tl.name)
 		go tl.exec()
 	}
-}
-
-func (c compute) exec(sched prgScheduler) {
-	sched.schedule(c.c)
 }
 
 func (p *program) findHostByName(name string) *host {

@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/lafriks/go-tiled"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
@@ -144,18 +146,28 @@ func loadComponents() {
 
 		p := gameWorld.AlignToTile(pixel.Vec{X: o.X + 10.0, Y: piksele.TiledFlipY(gameWorld.Tiles, o.Y) + 10.0})
 		x, y := gameWorld.VecToTile(p)
+		tileDef := lt.Tileset.Tiles[lt.ID]
 
 		c := &component{
 			position: p,
 			x:        x,
 			y:        y,
 			spriteID: lt.ID,
-			sched:    o.Properties.GetString("sched"),
-			con:      o.Properties.GetString("con"),
+			sched:    anyProp("sched", o.Properties, tileDef.Properties),
+			con:      anyProp("con", o.Properties, tileDef.Properties),
+			name:     anyProp("name", o.Properties, tileDef.Properties),
 		}
 
-		c.proc, _ = strconv.Atoi(o.Properties.GetString("proc"))
+		c.proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))
 
 		components = append(components, c)
 	}
+}
+
+func anyProp(propName string, p1 tiled.Properties, p2 tiled.Properties) string {
+	if p := p1.GetString(propName); p != "" {
+		return p
+	}
+
+	return p2.GetString(propName)
 }

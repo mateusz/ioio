@@ -60,14 +60,14 @@
  <tile id="8">
   <properties>
    <property name="con" value=""/>
-   <property name="proc" value="1"/>
+   <property name="proc" value="1000"/>
   </properties>
   <image width="16" height="16" source="cpu.png"/>
  </tile>
  <tile id="9">
   <properties>
    <property name="con" value=""/>
-   <property name="sched" value="fifo"/>
+   <property name="sched" value="infinite"/>
   </properties>
   <image width="16" height="16" source="router.png"/>
  </tile>

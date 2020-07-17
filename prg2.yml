@@ -1,0 +1,7 @@
+web:
+  ctl: [ h:internet ]
+  prg:
+    - get:
+      ctl: [ h:web ]
+      prg:
+        - c/1000ms 

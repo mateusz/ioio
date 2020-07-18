@@ -137,11 +137,8 @@ func run() {
 		blips := gameBlips.get()
 		for _, b := range blips {
 			blipCanvas.Color = b.color
-			blipCanvas.Push(gameWorld.TileToVec(b.x, b.y))
-			blipCanvas.Push(gameWorld.TileToVec(b.x, b.y).Add(pixel.Vec{
-				X: 2.0,
-				Y: 2.0,
-			}))
+			blipCanvas.Push(b.pos)
+			blipCanvas.Push(b.pos.Add(b.size))
 			blipCanvas.Rectangle(0)
 		}
 		blipCanvas.Draw(p1view)

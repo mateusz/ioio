@@ -1,24 +1,27 @@
 package main
 
 import (
+	"fmt"
+	"image/color"
 	"log"
-
-	"golang.org/x/image/colornames"
 )
 
 type topLevel struct {
 	get
-	name string
+	name  string
+	color color.Color
 }
 
 func (tl *topLevel) exec() {
+	fmt.Printf("%+v\n", tl)
 	h := tl.get.ctl["h"]
 	dest := tl.program.findHostByName(h)
-	gameBlips.add(dest.component.x, dest.component.y, colornames.Red)
+	b := &blip{x: dest.component.x, y: dest.component.y, color: tl.color}
+	gameBlips.add(b)
 	if dest == nil {
 		log.Printf("[%s] Host not found '%s'", tl.name, h)
 		return
 	}
 	tl.get.prg.exec(*dest)
-	gameBlips.del(dest.component.x, dest.component.y, colornames.Red)
+	gameBlips.del(b)
 }

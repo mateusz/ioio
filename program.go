@@ -1,9 +1,5 @@
 package main
 
-import (
-	"log"
-)
-
 type program struct {
 	source map[interface{}]interface{}
 	top    []topLevel
@@ -21,8 +17,8 @@ type hostScheduler interface {
 
 func (p *program) start() {
 	for _, tl := range p.top {
-		log.Printf("[%s] Starting request", tl.name)
-		go tl.exec()
+		tlLocal := tl
+		go tlLocal.exec()
 	}
 }
 

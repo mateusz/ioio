@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/image/colornames"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,7 +66,13 @@ func (p *program) parse() {
 		tl := topLevel{
 			name: ks,
 		}
+		// Top-level is a kind of a get.
 		tl.get = p.parseGet(&tl, get)
+		if colorName, ok := tl.get.ctl["color"]; ok {
+			if tl.color, ok = colornames.Map[colorName]; !ok {
+				p.checkErr(ok, fmt.Sprintf("Unrecognised color name: '%s'", colorName))
+			}
+		}
 
 		p.top = append(p.top, tl)
 	}

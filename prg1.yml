@@ -1,5 +1,12 @@
 web_request:
   ctl:
     h: internet
+    color: cyan
   prg:
-    - c/1000ms 
+    - c/1000ms
+web_request2:
+  ctl:
+    h: internet
+    color: red
+  prg:
+    - c/10000ms

@@ -67,7 +67,6 @@ func (pf *pathfinder) buildMap(w piksele.World, cs []*component) {
 			pf.nodeMap[i] = pf.convertToLinkages(c)
 		}
 	}
-	fmt.Printf("%+v\n", pf.nodeMap)
 }
 
 func (pf *pathfinder) convertToLinkages(c *component) []*pathNode {
@@ -185,7 +184,6 @@ func (n *pathNode) PathNeighbors() []astar.Pather {
 			}
 		}
 	}
-	fmt.Printf("%p, %+v\n", n, ns)
 	return ns
 }
 
@@ -241,7 +239,6 @@ func (n *pathStartingNode) PathNeighbors() []astar.Pather {
 			}
 		}
 	}
-	fmt.Printf("%p, %+v\n", n, ns)
 	return ns
 }
 

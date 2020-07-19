@@ -4,8 +4,10 @@ import (
 	"container/list"
 	"fmt"
 	"image/color"
+	"log"
 	"math"
 	"os"
+	"time"
 
 	"github.com/faiface/pixel"
 )
@@ -13,12 +15,16 @@ import (
 // Used both on the request side and on the render side.
 // Not expected to pass size or pos on the request side.
 type blip struct {
-	color color.Color
-	x     int
-	y     int
-	pos   pixel.Vec
-	size  pixel.Vec
-	path  *list.List
+	color     color.Color
+	x         int
+	y         int
+	size      pixel.Vec
+	path      *list.List
+	animStart time.Time
+	pos       pixel.Vec
+	target    pixel.Vec // position of current movement target
+	d         float64   // distance to current movement target
+	v         pixel.Vec // velocity vector
 }
 
 type blipList struct {
@@ -80,6 +86,7 @@ func (bl *blipList) get() []blip {
 
 func (bl *blipList) computeForOutput() []blip {
 	blipMap := make([][]blip, gameWorld.Tiles.Width*gameWorld.Tiles.Height)
+	blipAnim := make([]*blip, 0)
 	blipOutput := make([]blip, 0, bl.blips.Len())
 
 	for e := bl.blips.Front(); e != nil; e = e.Next() {
@@ -87,6 +94,11 @@ func (bl *blipList) computeForOutput() []blip {
 		if !ok {
 			fmt.Printf("Non-blip object in blip list!")
 			os.Exit(2)
+		}
+
+		if b.path == nil {
+			blipAnim = append(blipAnim, b)
+			continue
 		}
 
 		i := b.x + b.y*gameWorld.Tiles.Width
@@ -126,5 +138,42 @@ func (bl *blipList) computeForOutput() []blip {
 		}
 	}
 
+	for _, ba := range blipAnim {
+		ba.size = pixel.Vec{X: 2.0, Y: 2.0}
+
+		if ba.d > 0.0 {
+			ba.pos = ba.pos.Add(ba.v)
+			ba.d -= ba.v.Len()
+			if ba.d < 0.0 {
+				ba.pos = ba.target
+			}
+		} else {
+			ba.applyPath()
+		}
+
+		blipOutput = append(blipOutput, *ba)
+	}
+
 	return blipOutput
+}
+
+func (b *blip) applyPath() {
+	if b.path == nil || b.path.Len() == 0 {
+		b.target = b.pos
+		b.d = 0.0
+		b.v = pixel.ZV
+		b.path = nil
+		return
+	}
+
+	// Next path step
+	n, ok := b.path.Remove(b.path.Front()).(*pathNode)
+	if !ok {
+		log.Panic("Fatal: path list contained non-pathNode!")
+	}
+
+	b.target = gameWorld.TileToVec(n.x, n.y)
+	mv := b.target.Sub(b.pos)
+	b.d = mv.Len()
+	b.v = mv.Unit().Scaled(float64(gameWorld.Tiles.Width) * 1000.0 / n.cost)
 }

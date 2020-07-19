@@ -30,7 +30,7 @@
   </object>
   <object id="2" gid="6" x="80" y="144" width="16" height="16">
    <properties>
-    <property name="lat" value="1000ms"/>
+    <property name="lat" value="10000ms"/>
    </properties>
   </object>
   <object id="3" gid="6" x="96" y="144" width="16" height="16"/>

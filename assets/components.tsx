@@ -59,14 +59,16 @@
  </tile>
  <tile id="8">
   <properties>
-   <property name="con" value=""/>
+   <property name="con" value="tx,rx,bx,lx"/>
+   <property name="lat" value="1ms"/>
    <property name="proc" value="1000"/>
   </properties>
   <image width="16" height="16" source="cpu.png"/>
  </tile>
  <tile id="9">
   <properties>
-   <property name="con" value=""/>
+   <property name="con" value="tx,rx,bx,lx"/>
+   <property name="lat" value="1ms"/>
    <property name="sched" value="infinite"/>
   </properties>
   <image width="16" height="16" source="router.png"/>
@@ -101,7 +103,8 @@
  </tile>
  <tile id="14">
   <properties>
-   <property name="con" value=""/>
+   <property name="con" value="tx,rx,bx,lx"/>
+   <property name="lat" value="1ms"/>
    <property name="sched" value="multitasking"/>
   </properties>
   <image width="16" height="16" source="host.png"/>

@@ -31,7 +31,6 @@ func (p *prg) exec(host host) {
 		case get:
 			i.exec(host)
 		}
-
 	}
 
 	gameBlips.del(b)

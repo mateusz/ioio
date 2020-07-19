@@ -28,7 +28,11 @@
     <property name="name" value="internet"/>
    </properties>
   </object>
-  <object id="2" gid="6" x="80" y="144" width="16" height="16"/>
+  <object id="2" gid="6" x="80" y="144" width="16" height="16">
+   <properties>
+    <property name="lat" value="1000ms"/>
+   </properties>
+  </object>
   <object id="3" gid="6" x="96" y="144" width="16" height="16"/>
   <object id="7" gid="16" x="112" y="144" width="16" height="16">
    <properties>

@@ -135,6 +135,18 @@ func (p *program) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 				}
 				prg.instructions = append(prg.instructions, compute{c: cAmount})
 			}
+		case map[interface{}]interface{}:
+			for mk, mv := range v {
+				mks, ok := mk.(string)
+				p.checkErr(ok, "Error parsing get, instruction not a hash")
+
+				if strings.HasPrefix(mks, "get") {
+					gv, ok := mv.(map[interface{}]interface{})
+					p.checkErr(ok, "Error parsing get, get not a hash")
+
+					prg.instructions = append(prg.instructions, p.parseGet(tl, gv))
+				}
+			}
 		}
 	}
 

@@ -5,6 +5,7 @@ web_request:
   prg:
     - c/1000ms
     - get:
-      ctl: [ h:web ]
-      prg:
-      - c/1000ms
+        ctl:
+          h: web
+        prg:
+        - c/1000ms

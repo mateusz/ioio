@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"os"
 	"time"
 )
@@ -25,11 +26,14 @@ func (g get) exec(origin host) {
 		os.Exit(2)
 	}
 
+	log.Printf("[%s] Starting get '%s'\n", g.topLevel.name, dest.component.name)
+
 	path := gamePathfinder.findPath(
 		pathVec{x: origin.component.x, y: origin.component.y},
 		pathVec{x: dest.component.x, y: dest.component.y},
 	)
-	if path == nil {
+	if path == nil || path.Len() == 0 {
+		log.Printf("[%s] Path not found from '%s' to '%s'\n", g.topLevel.name, origin.component.name, dest.component.name)
 		return
 	}
 
@@ -48,7 +52,7 @@ func (g get) exec(origin host) {
 		x:     origin.component.x,
 		y:     origin.component.y,
 		color: g.topLevel.color,
-		path:  path,
+		path:  path, // takes ownership
 	}
 	gameBlips.add(b)
 
@@ -58,4 +62,6 @@ func (g get) exec(origin host) {
 	gameBlips.del(b)
 
 	g.prg.exec(*dest)
+
+	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.name)
 }

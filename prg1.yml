@@ -4,9 +4,7 @@ web_request:
     color: cyan
   prg:
     - c/1000ms
-web_request2:
-  ctl:
-    h: internet
-    color: red
-  prg:
-    - c/10000ms
+    - get:
+      ctl: [ h:web ]
+      prg:
+      - c/1000ms

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"log"
 )
@@ -13,7 +12,6 @@ type topLevel struct {
 }
 
 func (tl *topLevel) exec() {
-	fmt.Printf("%+v\n", tl)
 	h := tl.get.ctl["h"]
 	dest := tl.program.findHostByName(h)
 	b := &blip{x: dest.component.x, y: dest.component.y, color: tl.color}

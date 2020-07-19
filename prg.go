@@ -5,7 +5,7 @@ import (
 )
 
 type instruction interface {
-	exec(prgScheduler)
+	exec(host)
 }
 
 type prgScheduler interface {
@@ -27,8 +27,11 @@ func (p *prg) exec(host host) {
 	for _, instr := range p.instructions {
 		switch i := instr.(type) {
 		case compute:
-			i.exec(host.scheduler)
+			i.exec(host)
+		case get:
+			i.exec(host)
 		}
+
 	}
 
 	gameBlips.del(b)
@@ -40,6 +43,6 @@ type compute struct {
 	c int
 }
 
-func (c compute) exec(sched prgScheduler) {
-	sched.schedule(c.c)
+func (c compute) exec(h host) {
+	h.scheduler.schedule(c.c)
 }

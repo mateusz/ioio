@@ -31,6 +31,7 @@ var (
 	gamePrg          program
 	components       []*component
 	gameBlips        blipList
+	gamePathfinder   pathfinder
 )
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
 	gameWorld.Load(fmt.Sprintf("%s/../assets/arch2.tmx", workDir))
 
 	loadComponents()
+	gamePathfinder = NewPathfinder(gameWorld, components)
 	gamePrg = newProgram(fmt.Sprintf("%s/../prg1.yml", workDir), components)
 
 	componentSprites, err = piksele.NewSpritesetFromTsx(fmt.Sprintf("%s/../assets", workDir), "components.tsx")
@@ -173,6 +175,7 @@ func loadComponents() {
 			sched:    anyProp("sched", o.Properties, tileDef.Properties),
 			con:      anyProp("con", o.Properties, tileDef.Properties),
 			name:     anyProp("name", o.Properties, tileDef.Properties),
+			lat:      anyProp("lat", o.Properties, tileDef.Properties),
 		}
 
 		c.proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))

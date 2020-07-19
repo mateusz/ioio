@@ -10,12 +10,15 @@ import (
 	"github.com/faiface/pixel"
 )
 
+// Used both on the request side and on the render side.
+// Not expected to pass size or pos on the request side.
 type blip struct {
 	color color.Color
 	x     int
 	y     int
 	pos   pixel.Vec
 	size  pixel.Vec
+	path  *list.List
 }
 
 type blipList struct {

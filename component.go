@@ -10,5 +10,6 @@ type component struct {
 	con      string
 	proc     int
 	sched    string
+	lat      string
 	spriteID uint32
 }

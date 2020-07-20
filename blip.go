@@ -20,8 +20,8 @@ type blip struct {
 	y         int
 	size      pixel.Vec
 	path      *list.List
-	animStart time.Time
 	pos       pixel.Vec
+	animStart time.Time // start of current movement target
 	target    pixel.Vec // position of current movement target
 	d         float64   // distance to current movement target
 	v         pixel.Vec // velocity vector
@@ -96,7 +96,11 @@ func (bl *blipList) computeForOutput() []blip {
 			os.Exit(2)
 		}
 
-		if b.path == nil {
+		if b.path != nil {
+			if b.size == pixel.ZV {
+				b.pos = gameWorld.TileToVec(b.x, b.y)
+				b.size = pixel.Vec{X: 2.0, Y: 2.0}
+			}
 			blipAnim = append(blipAnim, b)
 			continue
 		}
@@ -139,11 +143,13 @@ func (bl *blipList) computeForOutput() []blip {
 	}
 
 	for _, ba := range blipAnim {
-		ba.size = pixel.Vec{X: 2.0, Y: 2.0}
 
 		if ba.d > 0.0 {
-			ba.pos = ba.pos.Add(ba.v)
-			ba.d -= ba.v.Len()
+			dt := time.Now().Sub(ba.animStart)
+			v := ba.v.Scaled(float64(dt) / float64(time.Second))
+			ba.pos = ba.pos.Add(v)
+			ba.d -= v.Len()
+			ba.animStart = time.Now()
 			if ba.d < 0.0 {
 				ba.pos = ba.target
 			}
@@ -172,6 +178,7 @@ func (b *blip) applyPath() {
 		log.Panic("Fatal: path list contained non-pathNode!")
 	}
 
+	b.animStart = time.Now()
 	b.target = gameWorld.TileToVec(n.x, n.y)
 	mv := b.target.Sub(b.pos)
 	b.d = mv.Len()

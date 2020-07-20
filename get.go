@@ -49,11 +49,10 @@ func (g get) exec(origin host) {
 	}
 
 	b := &blip{
-		x:         origin.component.x,
-		y:         origin.component.y,
-		color:     g.topLevel.color,
-		path:      path, // takes ownership
-		animStart: time.Now(),
+		x:     origin.component.x,
+		y:     origin.component.y,
+		color: g.topLevel.color,
+		path:  path, // takes ownership
 	}
 	gameBlips.add(b)
 

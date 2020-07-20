@@ -40,7 +40,8 @@ func (p *program) copyComponents(cs []*component) {
 			component: *c,
 		}
 
-		if c.sched == "infinite" {
+		switch c.sched {
+		case "infinite":
 			h.scheduler = NewSchedInfinite(&h.component)
 		}
 

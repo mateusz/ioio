@@ -8,4 +8,4 @@ web_request:
         ctl:
           h: web
         prg:
-        - c/1000ms
+        - c/3000ms

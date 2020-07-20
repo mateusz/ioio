@@ -96,7 +96,8 @@ func run() {
 	gameWorld.Draw(mapCanvas)
 
 	for _, c := range components {
-		componentSprites.Sprites[c.spriteID].Draw(mapCanvas, pixel.IM.Moved(c.position))
+		p := flipY(c.position).Sub(pixel.Vec{X: 0, Y: -float64(gameWorld.Tiles.TileHeight)})
+		componentSprites.Sprites[c.spriteID].Draw(mapCanvas, pixel.IM.Moved(p))
 	}
 
 	p1view := pixelgl.NewCanvas(pixel.R(0, 0, monW/pixSize, monH/pixSize))
@@ -139,8 +140,9 @@ func run() {
 		blips := gameBlips.get()
 		for _, b := range blips {
 			blipCanvas.Color = b.color
-			blipCanvas.Push(b.pos)
-			blipCanvas.Push(b.pos.Add(b.size))
+			p := flipY(b.pos)
+			blipCanvas.Push(p)
+			blipCanvas.Push(p.Add(b.size))
 			blipCanvas.Rectangle(0)
 		}
 		blipCanvas.Draw(p1view)
@@ -163,7 +165,7 @@ func loadComponents() {
 			log.Fatal(err)
 		}
 
-		p := gameWorld.AlignToTile(pixel.Vec{X: o.X + 10.0, Y: piksele.TiledFlipY(gameWorld.Tiles, o.Y) + 10.0})
+		p := gameWorld.AlignToTile(pixel.Vec{X: o.X + 10.0, Y: o.Y + 10.0})
 		x, y := gameWorld.VecToTile(p)
 		tileDef := lt.Tileset.Tiles[lt.ID]
 
@@ -190,4 +192,9 @@ func anyProp(propName string, p1 tiled.Properties, p2 tiled.Properties) string {
 	}
 
 	return p2.GetString(propName)
+}
+
+func flipY(pos pixel.Vec) pixel.Vec {
+	pos.Y = float64(gameWorld.Tiles.Height*gameWorld.Tiles.TileHeight) - pos.Y
+	return pos
 }

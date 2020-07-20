@@ -20,6 +20,6 @@ func (tl *topLevel) exec() {
 		log.Printf("[%s] Host not found '%s'", tl.name, h)
 		return
 	}
-	tl.get.prg.exec(*dest)
 	gameBlips.del(b)
+	tl.get.prg.exec(*dest)
 }

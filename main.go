@@ -96,8 +96,7 @@ func run() {
 	gameWorld.Draw(mapCanvas)
 
 	for _, c := range components {
-		p := flipY(c.position).Sub(pixel.Vec{X: 0, Y: -float64(gameWorld.Tiles.TileHeight)})
-		componentSprites.Sprites[c.spriteID].Draw(mapCanvas, pixel.IM.Moved(p))
+		componentSprites.Sprites[c.spriteID].Draw(mapCanvas, pixel.IM.Moved(flipY(c.position)))
 	}
 
 	p1view := pixelgl.NewCanvas(pixel.R(0, 0, monW/pixSize, monH/pixSize))
@@ -165,8 +164,10 @@ func loadComponents() {
 			log.Fatal(err)
 		}
 
-		p := gameWorld.AlignToTile(pixel.Vec{X: o.X + 10.0, Y: o.Y + 10.0})
+		p := gameWorld.AlignToTile(pixel.Vec{X: o.X + 10.0, Y: o.Y - 10.0})
 		x, y := gameWorld.VecToTile(p)
+		// Meh, we shouldn't be flipping at all when loading, just when blitting.
+		y = gameWorld.Tiles.Height - y - 1
 		tileDef := lt.Tileset.Tiles[lt.ID]
 
 		c := &component{

@@ -98,7 +98,8 @@ func (bl *blipList) computeForOutput() []blip {
 
 		if b.path != nil {
 			if b.size == pixel.ZV {
-				b.pos = gameWorld.TileToVec(b.x, b.y)
+				// It was a bad idea to flip in gameWorld. Unflip.
+				b.pos = gameWorld.TileToVec(b.x, gameWorld.Tiles.Height-b.y-1)
 				b.size = pixel.Vec{X: 2.0, Y: 2.0}
 			}
 			blipAnim = append(blipAnim, b)
@@ -119,7 +120,11 @@ func (bl *blipList) computeForOutput() []blip {
 			if tile == nil {
 				continue
 			}
+
 			basePos := gameWorld.TileToVec(x, y)
+			// It was a bad idea to flip in gameWorld. Unflip.
+			basePos.Y = float64(gameWorld.Tiles.Height*gameWorld.Tiles.TileHeight) - basePos.Y + 16.0
+
 			basePos = basePos.Sub(pixel.Vec{
 				X: float64(gameWorld.Tiles.TileWidth) / 2.0,
 				Y: float64(gameWorld.Tiles.TileHeight) / 2.0,
@@ -179,7 +184,8 @@ func (b *blip) applyPath() {
 	}
 
 	b.animStart = time.Now()
-	b.target = gameWorld.TileToVec(n.x, n.y)
+	// It was a bad idea to flip in gameWorld. Unflip.
+	b.target = gameWorld.TileToVec(n.x, gameWorld.Tiles.Height-n.y-1)
 	mv := b.target.Sub(b.pos)
 	b.d = mv.Len()
 	b.v = mv.Unit().Scaled(float64(gameWorld.Tiles.Width) * 1000.0 / n.cost)

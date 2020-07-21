@@ -37,7 +37,10 @@ func (g get) exec(origin host) {
 		return
 	}
 
-	totalCost := 0.0
+	// TODO move inside findPath
+	var slat int
+	fmt.Sscanf(origin.component.lat, "%dms", &slat)
+	totalCost := 0.0 + float64(slat)
 	for e := path.Front(); e != nil; e = e.Next() {
 		pn, ok := e.Value.(*pathNode)
 		if !ok {

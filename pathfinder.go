@@ -87,7 +87,6 @@ func (pf *pathfinder) convertToLinkages(c *component) []*pathNode {
 			y:    c.y,
 			pf:   pf,
 		}
-		fmt.Printf("%p: %+v\n", n, n)
 		ns = append(ns, n)
 	}
 
@@ -104,9 +103,9 @@ func letterToDir(letter byte) pathVec {
 	case 'r':
 		return pathVec{x: 1, y: 0}
 	case 't':
-		return pathVec{x: 0, y: 1}
-	case 'b':
 		return pathVec{x: 0, y: -1}
+	case 'b':
+		return pathVec{x: 0, y: 1}
 	default:
 		fmt.Printf("Unrecognised direction: %b", letter)
 		os.Exit(2)
@@ -170,7 +169,7 @@ func (n *pathNode) PathNeighbors() []astar.Pather {
 		}
 	}
 	if n.to.y < 0 && n.y > 0 {
-		tns := n.pf.getPatherNodesAt(n.x, n.y+1)
+		tns := n.pf.getPatherNodesAt(n.x, n.y-1)
 		for _, tn := range tns {
 			if tn.from.y > 0 {
 				ns = append(ns, tn)

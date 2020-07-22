@@ -14,7 +14,6 @@ web_request:
               h: db
             prg:
             - c/3000ms
-        - c/1000ms
 web_request2:
   ctl:
     h: internet
@@ -31,4 +30,3 @@ web_request2:
               h: db
             prg:
             - c/3000ms
-        - c/1000ms

@@ -4,9 +4,7 @@ Ioio (from maori: [nerve](https://maoridictionary.co.nz/search?keywords=ioio)) i
 
 And truly, really, this is about me excercising golang.
 
-![](ioio.png)
-
-*Disclosure: not an in-game footage :)*
+![](ioio.gif)
 
 ## Concepts
 

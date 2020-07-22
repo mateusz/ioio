@@ -1,11 +1,34 @@
 web_request:
   ctl:
     h: internet
-    color: cyan
+    color: yellow
   prg:
     - c/1000ms
     - get:
         ctl:
           h: web
         prg:
-        - c/3000ms
+        - c/1000ms
+        - get:
+            ctl:
+              h: db
+            prg:
+            - c/3000ms
+        - c/1000ms
+web_request2:
+  ctl:
+    h: internet
+    color: pink
+  prg:
+    - c/2000ms
+    - get:
+        ctl:
+          h: web
+        prg:
+        - c/1000ms
+        - get:
+            ctl:
+              h: db
+            prg:
+            - c/3000ms
+        - c/1000ms

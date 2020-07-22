@@ -28,18 +28,33 @@ func (g get) exec(origin host) {
 
 	log.Printf("[%s] Starting get '%s'\n", g.topLevel.name, dest.component.name)
 
+	if !g.transit(origin, *dest) {
+		return
+	}
+
+	g.prg.exec(*dest)
+
+	// But what if we can't find the return path? Should we instead simulate
+	// stateful firewalls, and make the return path simply the reverse?
+	// But then what if a wire breaks on the way back? That wouldn't be simulatable.
+	g.transit(*dest, origin)
+
+	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.name)
+}
+
+func (g get) transit(from host, to host) bool {
 	path := gamePathfinder.findPath(
-		pathVec{x: origin.component.x, y: origin.component.y},
-		pathVec{x: dest.component.x, y: dest.component.y},
+		pathVec{x: from.component.x, y: from.component.y},
+		pathVec{x: to.component.x, y: to.component.y},
 	)
 	if path == nil || path.Len() == 0 {
-		log.Printf("[%s] Path not found from '%s' to '%s'\n", g.topLevel.name, origin.component.name, dest.component.name)
-		return
+		log.Printf("[%s] Path not found from '%s' to '%s'\n", g.topLevel.name, from.component.name, to.component.name)
+		return false
 	}
 
 	// TODO move inside findPath
 	var slat int
-	fmt.Sscanf(origin.component.lat, "%dms", &slat)
+	fmt.Sscanf(from.component.lat, "%dms", &slat)
 	totalCost := 0.0 + float64(slat)
 	for e := path.Front(); e != nil; e = e.Next() {
 		pn, ok := e.Value.(*pathNode)
@@ -52,19 +67,18 @@ func (g get) exec(origin host) {
 	}
 
 	b := &blip{
-		x:     origin.component.x,
-		y:     origin.component.y,
+		x:     from.component.x,
+		y:     from.component.y,
 		color: g.topLevel.color,
 		path:  path, // takes ownership
 	}
 	gameBlips.add(b)
 
 	// Now traveling for as long as it takes, blip will take care of the actual animation
-	time.Sleep(time.Duration(totalCost) * time.Millisecond)
+	// Offsetting by 50 prevents the final blink that makes the dot jump to "from". I haven't
+	// debugged this one yet, and it seems to happen more on the return path.
+	time.Sleep(time.Duration(totalCost-50.0) * time.Millisecond)
 
 	gameBlips.del(b)
-
-	g.prg.exec(*dest)
-
-	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.name)
+	return true
 }

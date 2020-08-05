@@ -16,17 +16,17 @@ type get struct {
 	color    *color.Color
 }
 
-type ctl map[string]string
-
 func (g get) exec(origin host) {
 	h := g.ctl["h"]
 	dest := g.program.findHostByName(h)
 	if dest == nil {
-		fmt.Printf("Host '%s' not found", h)
+		fmt.Printf("Host '%s' not found\n", h)
 		os.Exit(2)
 	}
 
 	log.Printf("[%s] Starting get '%s'\n", g.topLevel.name, dest.component.name)
+	b := &blip{x: origin.component.x, y: origin.component.y, color: g.topLevel.color}
+	gameBlips.add(b)
 
 	if !g.transit(origin, *dest) {
 		return
@@ -39,6 +39,7 @@ func (g get) exec(origin host) {
 	// But then what if a wire breaks on the way back? That wouldn't be simulatable.
 	g.transit(*dest, origin)
 
+	gameBlips.del(b)
 	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.name)
 }
 

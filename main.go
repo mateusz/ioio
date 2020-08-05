@@ -51,7 +51,7 @@ func main() {
 
 	loadComponents()
 	gamePathfinder = NewPathfinder(gameWorld, components)
-	gamePrg = newProgram(fmt.Sprintf("%s/../prg1.yml", workDir), components)
+	gamePrg = newProgram(fmt.Sprintf("%s/../prg2.yml", workDir), components)
 
 	componentSprites, err = piksele.NewSpritesetFromTsx(fmt.Sprintf("%s/../assets", workDir), "components.tsx")
 	if err != nil {

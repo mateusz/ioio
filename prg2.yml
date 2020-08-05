@@ -1,7 +1,42 @@
-web:
-  ctl: [ h:internet ]
+web_request:
+  ctl:
+    h: internet
+    color: yellow
   prg:
-    - get:
-      ctl: [ h:web ]
-      prg:
-        - c/1000ms 
+    - rps:
+        ctl:
+          r: "1"
+        prg:
+        - get:
+            ctl:
+              h: web
+            prg:
+            - c/1000ms
+            - get:
+                ctl:
+                  h: redis
+                prg:
+                - c/3000ms
+web2_request:
+  ctl:
+    h: internet
+    color: pink
+  prg:
+    - rps:
+        ctl:
+          r: "2"
+        prg:
+        - get:
+            ctl:
+              h: web
+            prg:
+            - get:
+                ctl:
+                  h: db
+                prg:
+                - get:
+                    ctl:
+                      h: redis
+                    prg:
+                    - c/1000ms
+                - c/1000ms

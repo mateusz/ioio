@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type ctl map[string]string
+
 func newProgram(fileName string, cs []*component) program {
 	f, err := os.Open(fileName)
 	if err != nil {
@@ -102,6 +104,75 @@ func (p *program) parseGet(tl *topLevel, rawGet map[interface{}]interface{}) get
 	return get
 }
 
+func (p *program) parseSerial(tl *topLevel, rawSerial map[interface{}]interface{}) serial {
+	serial := serial{
+		program:  p,
+		topLevel: tl,
+	}
+	for k, v := range rawSerial {
+		ks, ok := k.(string)
+		p.checkErr(ok, "Error parsing serial, hash key not a string")
+
+		if ks == "ctl" {
+			ctl, ok := v.(map[interface{}]interface{})
+			p.checkErr(ok, "Error parsing serial, ctl not a hash")
+			serial.ctl = p.parseCtl(ctl)
+		} else if ks == "prg" {
+			prg, ok := v.([]interface{})
+			p.checkErr(ok, "Error parsing serial, prg not a list")
+			serial.prg = p.parsePrg(tl, prg)
+		}
+	}
+
+	return serial
+}
+
+func (p *program) parseParallel(tl *topLevel, rawParallel map[interface{}]interface{}) parallel {
+	parallel := parallel{
+		program:  p,
+		topLevel: tl,
+	}
+	for k, v := range rawParallel {
+		ks, ok := k.(string)
+		p.checkErr(ok, "Error parsing parallel, hash key not a string")
+
+		if ks == "ctl" {
+			ctl, ok := v.(map[interface{}]interface{})
+			p.checkErr(ok, "Error parsing parallel, ctl not a hash")
+			parallel.ctl = p.parseCtl(ctl)
+		} else if ks == "prg" {
+			prg, ok := v.([]interface{})
+			p.checkErr(ok, "Error parsing parallel, prg not a list")
+			parallel.prg = p.parsePrg(tl, prg)
+		}
+	}
+
+	return parallel
+}
+
+func (p *program) parseRps(tl *topLevel, rawRps map[interface{}]interface{}) rps {
+	rps := rps{
+		program:  p,
+		topLevel: tl,
+	}
+	for k, v := range rawRps {
+		ks, ok := k.(string)
+		p.checkErr(ok, "Error parsing rps, hash key not a string")
+
+		if ks == "ctl" {
+			ctl, ok := v.(map[interface{}]interface{})
+			p.checkErr(ok, "Error parsing rps, ctl not a hash")
+			rps.ctl = p.parseCtl(ctl)
+		} else if ks == "prg" {
+			prg, ok := v.([]interface{})
+			p.checkErr(ok, "Error parsing rps, prg not a list")
+			rps.prg = p.parsePrg(tl, prg)
+		}
+	}
+
+	return rps
+}
+
 func (p *program) parseCtl(rawCtl map[interface{}]interface{}) ctl {
 	ctl := make(ctl)
 	for k, v := range rawCtl {
@@ -134,7 +205,10 @@ func (p *program) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 					fmt.Printf("Error parsing prg instruction: %s\n", err)
 					os.Exit(2)
 				}
-				prg.instructions = append(prg.instructions, compute{c: cAmount})
+				prg.instructions = append(prg.instructions, compute{
+					topLevel: tl,
+					c:        cAmount,
+				})
 			}
 		case map[interface{}]interface{}:
 			for mk, mv := range v {
@@ -143,9 +217,24 @@ func (p *program) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 
 				if strings.HasPrefix(mks, "get") {
 					gv, ok := mv.(map[interface{}]interface{})
-					p.checkErr(ok, "Error parsing get, get not a hash")
+					p.checkErr(ok, "Error parsing get, not a hash")
 
 					prg.instructions = append(prg.instructions, p.parseGet(tl, gv))
+				} else if strings.HasPrefix(mks, "serial") {
+					gv, ok := mv.(map[interface{}]interface{})
+					p.checkErr(ok, "Error parsing serial, not a hash")
+
+					prg.instructions = append(prg.instructions, p.parseSerial(tl, gv))
+				} else if strings.HasPrefix(mks, "parallel") {
+					gv, ok := mv.(map[interface{}]interface{})
+					p.checkErr(ok, "Error parsing parallel, not a hash")
+
+					prg.instructions = append(prg.instructions, p.parseParallel(tl, gv))
+				} else if strings.HasPrefix(mks, "rps") {
+					gv, ok := mv.(map[interface{}]interface{})
+					p.checkErr(ok, "Error parsing rps, not a hash")
+
+					prg.instructions = append(prg.instructions, p.parseRps(tl, gv))
 				}
 			}
 		}

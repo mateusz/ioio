@@ -104,6 +104,7 @@
  <tile id="14">
   <properties>
    <property name="con" value="tx,rx,bx,lx"/>
+   <property name="cores" value="2"/>
    <property name="lat" value="250ms"/>
    <property name="sched" value="multitasking"/>
   </properties>

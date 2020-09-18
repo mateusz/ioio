@@ -126,7 +126,7 @@ func run() {
 
 		// Clean up for new frame
 		win.Clear(colornames.Black)
-		p1view.Clear(colornames.Green)
+		p1view.Clear(colornames.Lightslategray)
 		blipCanvas.Clear()
 
 		// Draw transformed map
@@ -182,6 +182,7 @@ func loadComponents() {
 		}
 
 		c.proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))
+		c.cores, _ = strconv.Atoi(anyProp("cores", o.Properties, tileDef.Properties))
 
 		components = append(components, c)
 	}

@@ -12,4 +12,5 @@ type component struct {
 	sched    string
 	lat      string
 	spriteID uint32
+	cores    int
 }

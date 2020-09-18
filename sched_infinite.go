@@ -5,16 +5,12 @@ import (
 	"time"
 )
 
-type schedRequest struct {
-	rsp chan bool
-	c   int
-}
-
 type schedInfinite struct {
 	roComponent  *component
 	scheduleChan chan schedRequest
 }
 
+// Simulation of an infinite machine - e.g. The Internet
 func NewSchedInfinite(c *component) *schedInfinite {
 	s := &schedInfinite{
 		roComponent:  c,
@@ -36,7 +32,6 @@ func (s *schedInfinite) start() {
 	}
 }
 
-// Infinite parallelism.
 func (s *schedInfinite) schedule(c int) {
 	req := schedRequest{
 		c:   c,

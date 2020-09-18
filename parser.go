@@ -45,6 +45,8 @@ func (p *program) copyComponents(cs []*component) {
 		switch c.sched {
 		case "infinite":
 			h.scheduler = NewSchedInfinite(&h.component)
+		case "multitasking":
+			h.scheduler = NewSchedMultitasking(&h.component)
 		}
 
 		p.hosts = append(p.hosts, h)

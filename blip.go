@@ -136,6 +136,9 @@ func (bl *blipList) computeForOutput() []blip {
 			}
 			// Assume square tile.
 			size := int(float64(gameWorld.Tiles.TileWidth+1) / float64(fits))
+			if size < 2 {
+				size = 2
+			}
 
 			for i, b := range tile {
 				dx := i % fits * size

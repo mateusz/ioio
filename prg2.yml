@@ -1,17 +1,17 @@
 web_request:
   ctl:
     h: internet
-    color: yellow
+    color: black
   prg:
     - rps:
         ctl:
-          r: "1"
+          r: "100"
         prg:
         - get:
             ctl:
               h: web
             prg:
-            - c/1000ms
+            - c/100ms
             - get:
                 ctl:
                   h: redis
@@ -20,11 +20,11 @@ web_request:
 web2_request:
   ctl:
     h: internet
-    color: pink
+    color: white
   prg:
     - rps:
         ctl:
-          r: "2"
+          r: "20"
         prg:
         - get:
             ctl:
@@ -38,5 +38,5 @@ web2_request:
                     ctl:
                       h: redis
                     prg:
-                    - c/1000ms
-                - c/1000ms
+                    - c/10ms
+                - c/10ms

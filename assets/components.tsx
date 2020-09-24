@@ -60,8 +60,9 @@
  <tile id="8">
   <properties>
    <property name="con" value="tx,rx,bx,lx"/>
+   <property name="cores" value="1"/>
    <property name="lat" value="250ms"/>
-   <property name="proc" value="1000"/>
+   <property name="sched" value="multitasking"/>
   </properties>
   <image width="16" height="16" source="cpu.png"/>
  </tile>
@@ -106,7 +107,9 @@
    <property name="con" value="tx,rx,bx,lx"/>
    <property name="cores" value="2"/>
    <property name="lat" value="250ms"/>
+   <property name="queue" value="10"/>
    <property name="sched" value="multitasking"/>
+   <property name="workers" value="10"/>
   </properties>
   <image width="16" height="16" source="host.png"/>
  </tile>

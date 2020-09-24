@@ -1,4 +1,4 @@
-package main
+package program
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 type parallel struct {
-	program  *program
+	sim      *Simulation
 	topLevel *topLevel
 	ctl      ctl
 	prg      prg

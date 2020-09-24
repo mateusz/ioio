@@ -1,4 +1,4 @@
-package main
+package pathfinder
 
 import (
 	"container/list"
@@ -8,12 +8,23 @@ import (
 	"strings"
 
 	"github.com/beefsack/go-astar"
+	"github.com/mateusz/ioio/architecture"
 	"github.com/mateusz/rtsian/piksele"
 )
 
-type pathfinder struct {
-	nodeMap [][]*pathNode
+type Pathfinder struct {
+	gw      *piksele.World
+	nodeMap [][]*PathNode
 	width   int
+}
+
+type PathNode struct {
+	X    int
+	Y    int
+	Cost float64
+	from pathVec
+	to   pathVec
+	pf   *Pathfinder
 }
 
 type pathVec struct {
@@ -21,70 +32,95 @@ type pathVec struct {
 	y int
 }
 
-type pathNode struct {
-	cost float64
-	from pathVec
-	to   pathVec
-	x    int
-	y    int
-	pf   *pathfinder
-}
-
 // Special handling for start, so that the pathfinder can get out
 type pathStartingNode struct {
 	x  int
 	y  int
-	pf *pathfinder
+	pf *Pathfinder
 }
 
-func NewPathfinder(w piksele.World, cs []*component) pathfinder {
-	pf := pathfinder{
+func NewPathfinder(w *piksele.World, cs []*architecture.Component) Pathfinder {
+	pf := Pathfinder{
+		gw:    w,
 		width: w.Tiles.Width,
 	}
-	pf.buildMap(w, cs)
+	pf.buildMap(cs)
 	return pf
 }
 
-func (pf *pathfinder) buildMap(w piksele.World, cs []*component) {
-	cmap := make([]*component, gameWorld.Tiles.Width*gameWorld.Tiles.Height)
-	pf.nodeMap = make([][]*pathNode, gameWorld.Tiles.Width*gameWorld.Tiles.Height)
+func (pf *Pathfinder) FindPath(fx, fy, tx, ty int) (l *list.List) {
+
+	start := &pathStartingNode{
+		x:  fx,
+		y:  fy,
+		pf: pf,
+	}
+
+	var path []astar.Pather
+	found := false
+	// Run through all targets. This is redundant, but works for now.
+	// Idea: add pathTerminatingNodes so that the search only has to run once.
+	for _, tn := range pf.getPatherNodesAt(tx, ty) {
+		path, _, found = astar.Path(start, tn)
+		if found {
+			break
+		}
+	}
+
+	if !found {
+		return
+	}
+
+	l = list.New()
+	for _, n := range path {
+		l.PushFront(n)
+	}
+	// Remove starting tile
+	l.Remove(l.Front())
+
+	return
+}
+
+func (pf *Pathfinder) buildMap(cs []*architecture.Component) {
+	cmap := make([]*architecture.Component, pf.gw.Tiles.Width*pf.gw.Tiles.Height)
+	pf.nodeMap = make([][]*PathNode, pf.gw.Tiles.Width*pf.gw.Tiles.Height)
 
 	for _, c := range cs {
-		i := gameWorld.Tiles.Width*c.y + c.x
+		i := pf.gw.Tiles.Width*c.Y + c.X
 		cmap[i] = c
 	}
 
-	for y := 0; y < gameWorld.Tiles.Height; y++ {
-		for x := 0; x < gameWorld.Tiles.Width; x++ {
-			i := x + y*gameWorld.Tiles.Width
+	for y := 0; y < pf.gw.Tiles.Height; y++ {
+		for x := 0; x < pf.gw.Tiles.Width; x++ {
+			i := x + y*pf.gw.Tiles.Width
 			c := cmap[i]
 			if cmap[i] == nil {
 				continue
 			}
 
-			pf.nodeMap[i] = make([]*pathNode, 0)
+			pf.nodeMap[i] = make([]*PathNode, 0)
 
 			pf.nodeMap[i] = pf.convertToLinkages(c)
 		}
 	}
 }
 
-func (pf *pathfinder) convertToLinkages(c *component) []*pathNode {
-	ns := make([]*pathNode, 0)
+func (pf *Pathfinder) convertToLinkages(c *architecture.Component) []*PathNode {
+	ns := make([]*PathNode, 0)
 	var latMs int
-	fmt.Sscanf(c.lat, "%dms", &latMs)
+	fmt.Sscanf(c.Lat, "%dms", &latMs)
 
-	linkages := strings.Split(c.con, ",")
+	linkages := strings.Split(c.Con, ",")
 	for _, l := range linkages {
 		if len(l) != 2 {
 			continue
 		}
-		n := &pathNode{
-			cost: float64(latMs),
+		n := &PathNode{
+			Cost: float64(latMs),
 			from: letterToDir(l[0]),
 			to:   letterToDir(l[1]),
-			x:    c.x,
-			y:    c.y,
+			X:    c.X,
+			Y:    c.Y,
 			pf:   pf,
 		}
 		ns = append(ns, n)
@@ -114,70 +150,38 @@ func letterToDir(letter byte) pathVec {
 	return pathVec{}
 }
 
-func (pf *pathfinder) findPath(from pathVec, to pathVec) (l *list.List) {
-	start := &pathStartingNode{
-		x:  from.x,
-		y:  from.y,
-		pf: pf,
-	}
-
-	var path []astar.Pather
-	found := false
-	// Run through all targets. This is redundant, but works for now.
-	// Idea: add pathTerminatingNodes so that the search only has to run once.
-	for _, tn := range pf.getPatherNodesAt(to.x, to.y) {
-		path, _, found = astar.Path(start, tn)
-		if found {
-			break
-		}
-	}
-
-	if !found {
-		return
-	}
-
-	l = list.New()
-	for _, n := range path {
-		l.PushFront(n)
-	}
-	// Remove starting tile
-	l.Remove(l.Front())
-
-	return
-}
-
-func (pf *pathfinder) getPatherNodesAt(x, y int) []*pathNode {
+func (pf *Pathfinder) getPatherNodesAt(x, y int) []*PathNode {
 	return pf.nodeMap[y*pf.width+x]
 }
 
-func (n *pathNode) PathNeighbors() []astar.Pather {
+func (n *PathNode) PathNeighbors() []astar.Pather {
 	ns := []astar.Pather{}
-	if n.to.x < 0 && n.x > 0 {
-		tns := n.pf.getPatherNodesAt(n.x-1, n.y)
+	if n.to.x < 0 && n.X > 0 {
+		tns := n.pf.getPatherNodesAt(n.X-1, n.Y)
 		for _, tn := range tns {
 			if tn.from.x > 0 {
 				ns = append(ns, tn)
 			}
 		}
 	}
-	if n.to.x > 0 && n.x < gameWorld.Tiles.Width-1 {
-		tns := n.pf.getPatherNodesAt(n.x+1, n.y)
+	if n.to.x > 0 && n.X < n.pf.gw.Tiles.Width-1 {
+		tns := n.pf.getPatherNodesAt(n.X+1, n.Y)
 		for _, tn := range tns {
 			if tn.from.x < 0 {
 				ns = append(ns, tn)
 			}
 		}
 	}
-	if n.to.y < 0 && n.y > 0 {
-		tns := n.pf.getPatherNodesAt(n.x, n.y-1)
+	if n.to.y < 0 && n.Y > 0 {
+		tns := n.pf.getPatherNodesAt(n.X, n.Y-1)
 		for _, tn := range tns {
 			if tn.from.y > 0 {
 				ns = append(ns, tn)
 			}
 		}
 	}
-	if n.to.y > 0 && n.y < gameWorld.Tiles.Height-1 {
-		tns := n.pf.getPatherNodesAt(n.x, n.y+1)
+	if n.to.y > 0 && n.Y < n.pf.gw.Tiles.Height-1 {
+		tns := n.pf.getPatherNodesAt(n.X, n.Y+1)
 		for _, tn := range tns {
 			if tn.from.y < 0 {
 				ns = append(ns, tn)
@@ -187,22 +191,22 @@ func (n *pathNode) PathNeighbors() []astar.Pather {
 	return ns
 }
 
-func (n *pathNode) PathNeighborCost(to astar.Pather) float64 {
-	tn, ok := to.(*pathNode)
+func (n *PathNode) PathNeighborCost(to astar.Pather) float64 {
+	tn, ok := to.(*PathNode)
 	if !ok {
 		return 10000000.0
 	}
 
-	return tn.cost
+	return tn.Cost
 }
 
-func (n *pathNode) PathEstimatedCost(to astar.Pather) float64 {
-	tn, ok := to.(*pathNode)
+func (n *PathNode) PathEstimatedCost(to astar.Pather) float64 {
+	tn, ok := to.(*PathNode)
 	if !ok {
 		return 10000000.0
 	}
 
-	return math.Abs(float64(tn.x-n.x)) + math.Abs(float64(tn.y-n.y))
+	return math.Abs(float64(tn.X-n.X)) + math.Abs(float64(tn.Y-n.Y))
 }
 
 func (n *pathStartingNode) PathNeighbors() []astar.Pather {
@@ -215,7 +219,7 @@ func (n *pathStartingNode) PathNeighbors() []astar.Pather {
 			}
 		}
 	}
-	if n.x < gameWorld.Tiles.Width-1 {
+	if n.x < n.pf.gw.Tiles.Width-1 {
 		tns := n.pf.getPatherNodesAt(n.x+1, n.y)
 		for _, tn := range tns {
 			if tn.from.x < 0 {
@@ -231,7 +235,7 @@ func (n *pathStartingNode) PathNeighbors() []astar.Pather {
 			}
 		}
 	}
-	if n.y < gameWorld.Tiles.Height-1 {
+	if n.y < n.pf.gw.Tiles.Height-1 {
 		tns := n.pf.getPatherNodesAt(n.x, n.y+1)
 		for _, tn := range tns {
 			if tn.from.y < 0 {
@@ -243,12 +247,12 @@ func (n *pathStartingNode) PathNeighbors() []astar.Pather {
 }
 
 func (n *pathStartingNode) PathNeighborCost(to astar.Pather) float64 {
-	tn, ok := to.(*pathNode)
+	tn, ok := to.(*PathNode)
 	if !ok {
 		return 10000000.0
 	}
 
-	return tn.cost
+	return tn.Cost
 }
 
 func (n *pathStartingNode) PathEstimatedCost(to astar.Pather) float64 {

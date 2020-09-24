@@ -1,8 +1,10 @@
-package main
+package program
 
 import (
 	"image/color"
 	"log"
+
+	"github.com/mateusz/ioio/graphics"
 )
 
 type topLevel struct {
@@ -13,13 +15,13 @@ type topLevel struct {
 
 func (tl *topLevel) exec() {
 	h := tl.get.ctl["h"]
-	dest := tl.program.findHostByName(h)
-	b := &blip{x: dest.component.x, y: dest.component.y, color: tl.color}
-	gameBlips.add(b)
+	dest := tl.sim.findHostByName(h)
+	b := &graphics.Blip{X: dest.component.X, Y: dest.component.Y, Color: tl.color}
+	tl.sim.blipList.Give(b)
 	if dest == nil {
 		log.Printf("[%s] Host not found '%s'", tl.name, h)
 		return
 	}
-	gameBlips.del(b)
+	tl.sim.blipList.Del(b)
 	tl.get.prg.exec(*dest)
 }

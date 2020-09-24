@@ -1,4 +1,4 @@
-package main
+package program
 
 import (
 	"fmt"
@@ -6,10 +6,13 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/mateusz/ioio/graphics"
+	"github.com/mateusz/ioio/pathfinder"
 )
 
 type get struct {
-	program  *program
+	sim      *Simulation
 	topLevel *topLevel
 	ctl      ctl
 	prg      prg
@@ -18,20 +21,22 @@ type get struct {
 
 func (g get) exec(origin host) {
 	h := g.ctl["h"]
-	dest := g.program.findHostByName(h)
+	dest := g.sim.findHostByName(h)
 	if dest == nil {
 		fmt.Printf("Host '%s' not found\n", h)
 		os.Exit(2)
 	}
 
-	log.Printf("[%s] Starting get '%s'\n", g.topLevel.name, dest.component.name)
-	b := &blip{x: origin.component.x, y: origin.component.y, color: g.topLevel.color}
-	gameBlips.add(b)
+	log.Printf("[%s] Starting get '%s'\n", g.topLevel.name, dest.component.Name)
+	b := &graphics.Blip{X: origin.component.X, Y: origin.component.Y, Color: g.topLevel.color}
+	g.sim.blipList.Give(b)
+	defer g.sim.blipList.Del(b)
 
 	if !g.transit(origin, *dest) {
 		return
 	}
 
+	// Execute at dest
 	g.prg.exec(*dest)
 
 	// But what if we can't find the return path? Should we instead simulate
@@ -39,47 +44,43 @@ func (g get) exec(origin host) {
 	// But then what if a wire breaks on the way back? That wouldn't be simulatable.
 	g.transit(*dest, origin)
 
-	gameBlips.del(b)
-	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.name)
+	log.Printf("[%s] Finished get '%s'\n", g.topLevel.name, dest.component.Name)
 }
 
 func (g get) transit(from host, to host) bool {
-	path := gamePathfinder.findPath(
-		pathVec{x: from.component.x, y: from.component.y},
-		pathVec{x: to.component.x, y: to.component.y},
-	)
+	path := g.sim.pathfinder.FindPath(from.component.X, from.component.Y, to.component.X, to.component.Y)
 	if path == nil || path.Len() == 0 {
-		log.Printf("[%s] Path not found from '%s' to '%s'\n", g.topLevel.name, from.component.name, to.component.name)
+		log.Printf("[%s] Path not found from '%s' to '%s'\n", g.topLevel.name, from.component.Name, to.component.Name)
 		return false
 	}
 
-	// TODO move inside findPath
+	// TODO move inside findPath?
 	var slat int
-	fmt.Sscanf(from.component.lat, "%dms", &slat)
+	fmt.Sscanf(from.component.Lat, "%dms", &slat)
 	totalCost := 0.0 + float64(slat)
 	for e := path.Front(); e != nil; e = e.Next() {
-		pn, ok := e.Value.(*pathNode)
+		pn, ok := e.Value.(*pathfinder.PathNode)
 		if !ok {
 			fmt.Print("Non-pathNode found in path list\n")
 			os.Exit(2)
 		}
 
-		totalCost += pn.cost
+		totalCost += pn.Cost
 	}
 
-	b := &blip{
-		x:     from.component.x,
-		y:     from.component.y,
-		color: g.topLevel.color,
-		path:  path, // takes ownership
+	b := &graphics.Blip{
+		X:     from.component.X,
+		Y:     from.component.Y,
+		Color: g.topLevel.color,
+		Path:  path,
 	}
-	gameBlips.add(b)
+	g.sim.blipList.Give(b)
 
 	// Now traveling for as long as it takes, blip will take care of the actual animation
 	// Offsetting by 50 prevents the final blink that makes the dot jump to "from". I haven't
 	// debugged this one yet, and it seems to happen more on the return path.
 	time.Sleep(time.Duration(totalCost-50.0) * time.Millisecond)
 
-	gameBlips.del(b)
+	g.sim.blipList.Del(b)
 	return true
 }

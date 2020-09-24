@@ -1,4 +1,4 @@
-package main
+package program
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 type serial struct {
-	program  *program
+	sim      *Simulation
 	topLevel *topLevel
 	ctl      ctl
 	prg      prg

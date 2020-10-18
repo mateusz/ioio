@@ -17,6 +17,9 @@ import (
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 
+	"github.com/mateusz/ioio/architecture"
+	"github.com/mateusz/ioio/graphics"
+	"github.com/mateusz/ioio/program"
 	"github.com/mateusz/rtsian/piksele"
 )
 
@@ -28,10 +31,9 @@ var (
 	componentSprites piksele.Spriteset
 	p1               player
 	gameWorld        piksele.World
-	gamePrg          program
-	components       []*component
-	gameBlips        blipList
-	gamePathfinder   pathfinder
+	gameSim          program.Simulation
+	components       []*architecture.Component
+	gameBlips        graphics.BlipList
 )
 
 func main() {
@@ -44,14 +46,13 @@ func main() {
 		os.Exit(2)
 	}
 
-	gameBlips = NewBlipList()
-
 	gameWorld = piksele.World{}
 	gameWorld.Load(fmt.Sprintf("%s/../assets/arch2.tmx", workDir))
 
+	gameBlips = graphics.NewBlipList(&gameWorld)
+
 	loadComponents()
-	gamePathfinder = NewPathfinder(gameWorld, components)
-	gamePrg = newProgram(fmt.Sprintf("%s/../prg2.yml", workDir), components)
+	gameSim = program.NewSimulation(fmt.Sprintf("%s/../prg2.yml", workDir), components, &gameWorld, &gameBlips)
 
 	componentSprites, err = piksele.NewSpritesetFromTsx(fmt.Sprintf("%s/../assets", workDir), "components.tsx")
 	if err != nil {
@@ -96,13 +97,13 @@ func run() {
 	gameWorld.Draw(mapCanvas)
 
 	for _, c := range components {
-		componentSprites.Sprites[c.spriteID].Draw(mapCanvas, pixel.IM.Moved(flipY(c.position)))
+		componentSprites.Sprites[c.SpriteID].Draw(mapCanvas, pixel.IM.Moved(flipY(c.Position)))
 	}
 
 	p1view := pixelgl.NewCanvas(pixel.R(0, 0, monW/pixSize, monH/pixSize))
 	blipCanvas := imdraw.New(nil)
 
-	gamePrg.start()
+	gameSim.Start()
 
 	last := time.Now()
 	for !win.Closed() {
@@ -136,12 +137,12 @@ func run() {
 		}))
 
 		// Draw blips
-		blips := gameBlips.get()
+		blips := gameBlips.Get()
 		for _, b := range blips {
-			blipCanvas.Color = b.color
-			p := flipY(b.pos)
+			blipCanvas.Color = b.Color
+			p := flipY(b.Pos)
 			blipCanvas.Push(p)
-			blipCanvas.Push(p.Add(b.size))
+			blipCanvas.Push(p.Add(b.Size))
 			blipCanvas.Rectangle(0)
 		}
 		blipCanvas.Draw(p1view)
@@ -170,19 +171,21 @@ func loadComponents() {
 		y = gameWorld.Tiles.Height - y - 1
 		tileDef := lt.Tileset.Tiles[lt.ID]
 
-		c := &component{
-			position: p,
-			x:        x,
-			y:        y,
-			spriteID: lt.ID,
-			sched:    anyProp("sched", o.Properties, tileDef.Properties),
-			con:      anyProp("con", o.Properties, tileDef.Properties),
-			name:     anyProp("name", o.Properties, tileDef.Properties),
-			lat:      anyProp("lat", o.Properties, tileDef.Properties),
+		c := &architecture.Component{
+			Position: p,
+			X:        x,
+			Y:        y,
+			SpriteID: lt.ID,
+			Sched:    anyProp("sched", o.Properties, tileDef.Properties),
+			Con:      anyProp("con", o.Properties, tileDef.Properties),
+			Name:     anyProp("name", o.Properties, tileDef.Properties),
+			Lat:      anyProp("lat", o.Properties, tileDef.Properties),
 		}
 
-		c.proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))
-		c.cores, _ = strconv.Atoi(anyProp("cores", o.Properties, tileDef.Properties))
+		c.Proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))
+		c.Cores, _ = strconv.Atoi(anyProp("cores", o.Properties, tileDef.Properties))
+		c.Queue, _ = strconv.Atoi(anyProp("queue", o.Properties, tileDef.Properties))
+		c.Workers, _ = strconv.Atoi(anyProp("workers", o.Properties, tileDef.Properties))
 
 		components = append(components, c)
 	}

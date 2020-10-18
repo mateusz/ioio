@@ -1,18 +1,18 @@
-package main
+package architecture
 
 import (
 	"log"
 	"time"
 )
 
-type schedInfinite struct {
-	roComponent  *component
+// schedInfinite is a simulation of a machine with infinite resources - e.g. The Internet
+type SchedInfinite struct {
+	roComponent  *Component
 	scheduleChan chan schedRequest
 }
 
-// Simulation of an infinite machine - e.g. The Internet
-func NewSchedInfinite(c *component) *schedInfinite {
-	s := &schedInfinite{
+func NewSchedInfinite(c *Component) *SchedInfinite {
+	s := &SchedInfinite{
 		roComponent:  c,
 		scheduleChan: make(chan schedRequest),
 	}
@@ -21,18 +21,18 @@ func NewSchedInfinite(c *component) *schedInfinite {
 	return s
 }
 
-func (s *schedInfinite) start() {
+func (s *SchedInfinite) start() {
 	for {
 		r := <-s.scheduleChan
 		go func(r schedRequest) {
-			log.Printf("{%s} Scheduler consuming %d", s.roComponent.name, r.c)
+			log.Printf("{%s} Scheduler consuming %d", s.roComponent.Name, r.c)
 			time.Sleep(time.Millisecond * time.Duration(r.c))
 			r.rsp <- true
 		}(r)
 	}
 }
 
-func (s *schedInfinite) schedule(c int) {
+func (s *SchedInfinite) Schedule(c int) {
 	req := schedRequest{
 		c:   c,
 		rsp: make(chan bool),

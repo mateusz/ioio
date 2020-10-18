@@ -24,7 +24,7 @@ web2_request:
   prg:
     - rps:
         ctl:
-          r: "20"
+          r: "22"
         prg:
         - get:
             ctl:

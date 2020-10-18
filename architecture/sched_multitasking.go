@@ -1,4 +1,4 @@
-package main
+package architecture
 
 import (
 	"container/list"
@@ -7,20 +7,21 @@ import (
 	"time"
 )
 
+// SchedMultitasking is a simulation of core-limited machine
+type SchedMultitasking struct {
+	roComponent  *Component
+	scheduleChan chan schedRequest
+	processess   *list.List
+}
+
+// schedProcess is used to track execution progress of schedRequest
 type schedProcess struct {
 	req        schedRequest
 	cRemaining int
 }
 
-type schedMultitasking struct {
-	roComponent  *component
-	scheduleChan chan schedRequest
-	processess   *list.List
-}
-
-// Simulation of real-world core-limited machine
-func NewSchedMultitasking(c *component) *schedMultitasking {
-	s := &schedMultitasking{
+func NewSchedMultitasking(c *Component) *SchedMultitasking {
+	s := &SchedMultitasking{
 		roComponent:  c,
 		scheduleChan: make(chan schedRequest),
 		processess:   list.New(),
@@ -30,7 +31,7 @@ func NewSchedMultitasking(c *component) *schedMultitasking {
 	return s
 }
 
-func (s *schedMultitasking) start() {
+func (s *SchedMultitasking) start() {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	for {
 		select {
@@ -40,14 +41,14 @@ func (s *schedMultitasking) start() {
 				cRemaining: r.c,
 			})
 		case <-ticker.C:
-			for i := 0; i < s.roComponent.cores; i++ {
+			for i := 0; i < s.roComponent.Cores; i++ {
 				s.consume(100)
 			}
 		}
 	}
 }
 
-func (s *schedMultitasking) consume(c int) {
+func (s *SchedMultitasking) consume(c int) {
 	curr := s.processess.Front()
 	if curr == nil {
 		return
@@ -55,7 +56,7 @@ func (s *schedMultitasking) consume(c int) {
 
 	p, ok := curr.Value.(*schedProcess)
 	if !ok {
-		fmt.Printf("[%s] Unexpected item in the processess queue\n", s.roComponent.name)
+		fmt.Printf("[%s] Unexpected item in the processess queue\n", s.roComponent.Name)
 		os.Exit(2)
 	}
 
@@ -68,7 +69,7 @@ func (s *schedMultitasking) consume(c int) {
 	s.processess.MoveToBack(curr)
 }
 
-func (s *schedMultitasking) schedule(c int) {
+func (s *SchedMultitasking) Schedule(c int) {
 	req := schedRequest{
 		c:   c,
 		rsp: make(chan bool),

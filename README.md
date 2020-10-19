@@ -1,6 +1,6 @@
 # Ioio
 
-Ioio (from maori: [nerve](https://maoridictionary.co.nz/search?keywords=ioio)) is intended to be a simulator of networked infrastructure, so that one can simulate simple execution patterns and see failure modes such as bottlenecks forming.
+Ioio (from Māori: [nerve](https://maoridictionary.co.nz/search?keywords=ioio)) is intended to be a simulator of networked infrastructure, so that one can simulate simple execution patterns and see failure modes such as bottlenecks forming.
 
 And truly, really, this is about me excercising golang.
 

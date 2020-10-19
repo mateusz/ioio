@@ -26,13 +26,13 @@ func (s *SchedInfinite) start() {
 		r := <-s.scheduleChan
 		go func(r schedRequest) {
 			log.Printf("{%s} Scheduler consuming %d", s.roComponent.Name, r.c)
-			time.Sleep(time.Millisecond * time.Duration(r.c))
+			time.Sleep(r.c)
 			r.rsp <- true
 		}(r)
 	}
 }
 
-func (s *SchedInfinite) Schedule(c int) {
+func (s *SchedInfinite) Schedule(c time.Duration) {
 	req := schedRequest{
 		c:   c,
 		rsp: make(chan bool),

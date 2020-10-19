@@ -11,7 +11,7 @@ web_request:
             ctl:
               h: web
             prg:
-            - c/1000ms
+            - c/1s
 doom_request:
   ctl:
     h: arpanet
@@ -25,7 +25,7 @@ doom_request:
             ctl:
               h: doom
             prg:
-            - c/1000ms
+            - c/1s
 other_request:
   ctl:
     h: arpanet
@@ -39,4 +39,4 @@ other_request:
             ctl:
               h: web
             prg:
-            - c/1000ms
+            - c/1s

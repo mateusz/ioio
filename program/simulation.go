@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/mateusz/ioio/pathfinder"
 	"github.com/mateusz/rtsian/piksele"
@@ -28,7 +29,7 @@ type host struct {
 }
 
 type hostScheduler interface {
-	Schedule(int)
+	Schedule(time.Duration)
 }
 
 func NewSimulation(fileName string, cs []*architecture.Component, gw *piksele.World, bl *graphics.BlipList) Simulation {
@@ -218,8 +219,8 @@ func (s *Simulation) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 		switch v := stmt.(type) {
 		case string:
 			if strings.HasPrefix(v, "c/") {
-				var cAmount int
-				n, err := fmt.Sscanf(v, "c/%dms", &cAmount)
+				var cAmount string
+				n, err := fmt.Sscanf(v, "c/%s", &cAmount)
 				if n != 1 {
 					fmt.Printf("Error parsing prg instruction, c/ encountered too many times")
 					os.Exit(2)
@@ -228,9 +229,15 @@ func (s *Simulation) parsePrg(tl *topLevel, rawPrg []interface{}) prg {
 					fmt.Printf("Error parsing prg instruction: %s\n", err)
 					os.Exit(2)
 				}
+
+				c, err := time.ParseDuration(cAmount)
+				if err != nil {
+					fmt.Printf("Error parsing prg instruction: %s\n", err)
+					os.Exit(2)
+				}
 				prg.instructions = append(prg.instructions, compute{
 					topLevel: tl,
-					c:        cAmount,
+					c:        c,
 				})
 			}
 		case map[interface{}]interface{}:

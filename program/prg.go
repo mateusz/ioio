@@ -2,6 +2,7 @@ package program
 
 import (
 	"log"
+	"time"
 
 	"github.com/mateusz/ioio/graphics"
 )
@@ -28,7 +29,7 @@ func (p *prg) exec(host host) {
 
 type compute struct {
 	topLevel *topLevel
-	c        int
+	c        time.Duration
 }
 
 func (c compute) exec(h host) {

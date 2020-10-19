@@ -17,7 +17,7 @@ type SchedMultitasking struct {
 // schedProcess is used to track execution progress of schedRequest
 type schedProcess struct {
 	req        schedRequest
-	cRemaining int
+	cRemaining time.Duration
 }
 
 func NewSchedMultitasking(c *Component) *SchedMultitasking {
@@ -69,7 +69,7 @@ func (s *SchedMultitasking) consume(c int) {
 	s.processess.MoveToBack(curr)
 }
 
-func (s *SchedMultitasking) Schedule(c int) {
+func (s *SchedMultitasking) Schedule(c time.Duration) {
 	req := schedRequest{
 		c:   c,
 		rsp: make(chan bool),

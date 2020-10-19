@@ -4,15 +4,19 @@ import (
 	"container/list"
 	"fmt"
 	"image/color"
-	"log"
 	"math"
 	"os"
 	"time"
 
 	"github.com/faiface/pixel"
-	"github.com/mateusz/ioio/pathfinder"
 	"github.com/mateusz/rtsian/piksele"
 )
+
+type pathNode interface {
+	X() int
+	Y() int
+	Cost() float64
+}
 
 type Blip struct {
 	Color     color.Color
@@ -22,9 +26,6 @@ type Blip struct {
 	Size      pixel.Vec  // pain size
 	Pos       pixel.Vec  // paint location
 	animStart time.Time  // start of current movement target
-	target    pixel.Vec  // position of current movement target
-	d         float64    // distance to current movement target
-	v         pixel.Vec  // velocity vector
 }
 
 type BlipList struct {
@@ -103,9 +104,9 @@ func (bl *BlipList) computeForOutput() []Blip {
 
 		if b.Path != nil {
 			if b.Size == pixel.ZV {
-				// It was a bad idea to flip in gameWorld. Unflip.
-				b.Pos = bl.gw.TileToVec(b.X, bl.gw.Tiles.Height-b.Y-1)
+				// Initialize animation
 				b.Size = pixel.Vec{X: 2.0, Y: 2.0}
+				b.animStart = time.Now()
 			}
 			blipAnim = append(blipAnim, b)
 			continue
@@ -158,45 +159,47 @@ func (bl *BlipList) computeForOutput() []Blip {
 
 	// Update paint parameters of moving blips
 	for _, ba := range blipAnim {
+		currentT := float64(time.Since(ba.animStart) / time.Millisecond)
+		var from, to pathNode
+		// Remaining ms in this step (from->to)
+		remainingT := 0.0
 
-		if ba.d > 0.0 {
-			dt := time.Since(ba.animStart)
-			v := ba.v.Scaled(float64(dt) / float64(time.Second))
-			ba.Pos = ba.Pos.Add(v)
-			ba.d -= v.Len()
-			ba.animStart = time.Now()
-			if ba.d < 0.0 {
-				ba.Pos = ba.target
+		pathT := 0.0
+		for e := ba.Path.Front(); e != nil; e = e.Next() {
+			pn, ok := e.Value.(pathNode)
+			if !ok {
+				fmt.Print("Non-pathNode found in path list\n")
+				os.Exit(2)
 			}
-		} else {
-			bl.applyPath(ba)
+
+			if e == ba.Path.Front() {
+				from = pn
+				continue
+			}
+
+			pathT += pn.Cost()
+			if pathT > currentT {
+				// Found destination node
+				to = pn
+				remainingT = pathT - currentT
+				break
+			}
+
+			from = pn
 		}
 
+		// At destination
+		if to == nil {
+			ba.Pos = bl.gw.TileToVec(from.X(), bl.gw.Tiles.Height-from.Y()-1)
+		} else {
+			progress := (to.Cost() - remainingT) / to.Cost()
+			fromPos := bl.gw.TileToVec(from.X(), bl.gw.Tiles.Height-from.Y()-1)
+			toPos := bl.gw.TileToVec(to.X(), bl.gw.Tiles.Height-to.Y()-1)
+			d := toPos.Sub(fromPos).Scaled(progress)
+			ba.Pos = fromPos.Add(d)
+		}
 		blipOutput = append(blipOutput, *ba)
 	}
 
 	return blipOutput
-}
-
-func (bl *BlipList) applyPath(b *Blip) {
-	if b.Path == nil || b.Path.Len() == 0 {
-		b.target = b.Pos
-		b.d = 0.0
-		b.v = pixel.ZV
-		b.Path = nil
-		return
-	}
-
-	// Next path step
-	n, ok := b.Path.Remove(b.Path.Front()).(*pathfinder.PathNode)
-	if !ok {
-		log.Panic("Fatal: path list contained non-pathNode!")
-	}
-
-	b.animStart = time.Now()
-	// It was a bad idea to flip in.gameWorld. Unflip.
-	b.target = bl.gw.TileToVec(n.X, bl.gw.Tiles.Height-n.Y-1)
-	mv := b.target.Sub(b.Pos)
-	b.d = mv.Len()
-	b.v = mv.Unit().Scaled(float64(bl.gw.Tiles.Width) * 1000.0 / n.Cost)
 }

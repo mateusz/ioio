@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.2.1" name="components" tilewidth="16" tileheight="16" tilecount="15" columns="0">
+<tileset version="1.2" tiledversion="1.2.1" name="components" tilewidth="16" tileheight="16" tilecount="19" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -112,5 +112,33 @@
    <property name="workers" value="10"/>
   </properties>
   <image width="16" height="16" source="host.png"/>
+ </tile>
+ <tile id="15">
+  <properties>
+   <property name="con" value="bt"/>
+   <property name="lat" value="250ms"/>
+  </properties>
+  <image width="16" height="16" source="wire_v_u.png"/>
+ </tile>
+ <tile id="16">
+  <properties>
+   <property name="con" value="tb"/>
+   <property name="lat" value="250ms"/>
+  </properties>
+  <image width="16" height="16" source="wire_v_d.png"/>
+ </tile>
+ <tile id="17">
+  <properties>
+   <property name="con" value="rl"/>
+   <property name="lat" value="250ms"/>
+  </properties>
+  <image width="16" height="16" source="wire_h_l.png"/>
+ </tile>
+ <tile id="18">
+  <properties>
+   <property name="con" value="lr"/>
+   <property name="lat" value="250ms"/>
+  </properties>
+  <image width="16" height="16" source="wire_h_r.png"/>
  </tile>
 </tileset>

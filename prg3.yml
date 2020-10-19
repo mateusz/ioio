@@ -1,0 +1,42 @@
+web_request:
+  ctl:
+    h: internet
+    color: black
+  prg:
+    - rps:
+        ctl: 
+          r: "1"
+        prg:
+        - get:
+            ctl:
+              h: web
+            prg:
+            - c/100ms
+doom_request:
+  ctl:
+    h: arpanet
+    color: brown
+  prg:
+    - rps:
+        ctl: 
+          r: "1"
+        prg:
+        - get:
+            ctl:
+              h: doom
+            prg:
+            - c/100ms
+other_request:
+  ctl:
+    h: arpanet
+    color: yellow
+  prg:
+    - rps:
+        ctl: 
+          r: "0.35"
+        prg:
+        - get:
+            ctl:
+              h: web
+            prg:
+            - c/100ms

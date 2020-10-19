@@ -8,8 +8,11 @@ import (
 	"time"
 
 	"github.com/mateusz/ioio/graphics"
-	"github.com/mateusz/ioio/pathfinder"
 )
+
+type pathNode interface {
+	Cost() float64
+}
 
 type get struct {
 	sim      *Simulation
@@ -54,18 +57,19 @@ func (g get) transit(from host, to host) bool {
 		return false
 	}
 
-	// TODO move inside findPath?
-	var slat int
-	fmt.Sscanf(from.component.Lat, "%dms", &slat)
-	totalCost := 0.0 + float64(slat)
+	totalCost := 0.0
 	for e := path.Front(); e != nil; e = e.Next() {
-		pn, ok := e.Value.(*pathfinder.PathNode)
+		pn, ok := e.Value.(pathNode)
 		if !ok {
 			fmt.Print("Non-pathNode found in path list\n")
 			os.Exit(2)
 		}
 
-		totalCost += pn.Cost
+		// Cost of origin tile ignored.
+		if e == path.Front() {
+			continue
+		}
+		totalCost += pn.Cost()
 	}
 
 	b := &graphics.Blip{
@@ -79,7 +83,7 @@ func (g get) transit(from host, to host) bool {
 	// Now traveling for as long as it takes, blip will take care of the actual animation
 	// Offsetting by 50 prevents the final blink that makes the dot jump to "from". I haven't
 	// debugged this one yet, and it seems to happen more on the return path.
-	time.Sleep(time.Duration(totalCost-50.0) * time.Millisecond)
+	time.Sleep(time.Duration(totalCost) * time.Millisecond)
 
 	g.sim.blipList.Del(b)
 	return true

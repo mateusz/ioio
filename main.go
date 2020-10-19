@@ -47,12 +47,12 @@ func main() {
 	}
 
 	gameWorld = piksele.World{}
-	gameWorld.Load(fmt.Sprintf("%s/../assets/arch2.tmx", workDir))
+	gameWorld.Load(fmt.Sprintf("%s/../assets/arch3.tmx", workDir))
 
 	gameBlips = graphics.NewBlipList(&gameWorld)
 
 	loadComponents()
-	gameSim = program.NewSimulation(fmt.Sprintf("%s/../prg2.yml", workDir), components, &gameWorld, &gameBlips)
+	gameSim = program.NewSimulation(fmt.Sprintf("%s/../prg3.yml", workDir), components, &gameWorld, &gameBlips)
 
 	componentSprites, err = piksele.NewSpritesetFromTsx(fmt.Sprintf("%s/../assets", workDir), "components.tsx")
 	if err != nil {

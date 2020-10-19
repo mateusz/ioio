@@ -15,7 +15,7 @@ import (
 type pathNode interface {
 	X() int
 	Y() int
-	Cost() float64
+	Cost() time.Duration
 }
 
 type Blip struct {
@@ -159,16 +159,16 @@ func (bl *BlipList) computeForOutput() []Blip {
 
 	// Update paint parameters of moving blips
 	for _, ba := range blipAnim {
-		currentT := float64(time.Since(ba.animStart) / time.Millisecond)
+		currentT := time.Since(ba.animStart)
 		var from, to pathNode
-		// Remaining ms in this step (from->to)
-		remainingT := 0.0
+		// Remaining time in this step (from->to)
+		var remainingT time.Duration
 
-		pathT := 0.0
+		var pathT time.Duration
 		for e := ba.Path.Front(); e != nil; e = e.Next() {
 			pn, ok := e.Value.(pathNode)
 			if !ok {
-				fmt.Print("Non-pathNode found in path list\n")
+				fmt.Print("Non-pathNode found in path list (1)\n")
 				os.Exit(2)
 			}
 
@@ -192,7 +192,7 @@ func (bl *BlipList) computeForOutput() []Blip {
 		if to == nil {
 			ba.Pos = bl.gw.TileToVec(from.X(), bl.gw.Tiles.Height-from.Y()-1)
 		} else {
-			progress := (to.Cost() - remainingT) / to.Cost()
+			progress := float64(to.Cost()-remainingT) / float64(to.Cost())
 			fromPos := bl.gw.TileToVec(from.X(), bl.gw.Tiles.Height-from.Y()-1)
 			toPos := bl.gw.TileToVec(to.X(), bl.gw.Tiles.Height-to.Y()-1)
 			d := toPos.Sub(fromPos).Scaled(progress)

@@ -1,10 +1,7 @@
 package program
 
 import (
-	"fmt"
 	"log"
-	"os"
-	"strconv"
 	"sync"
 )
 
@@ -17,13 +14,9 @@ type parallel struct {
 
 func (p parallel) exec(origin host) {
 	log.Printf("[%s] Starting parallel execution\n", p.topLevel.name)
-	r, err := strconv.Atoi(p.ctl["r"])
-	if err != nil {
-		fmt.Printf("[%s] Failed to convert ctl.r: %s\n", p.topLevel.name, err)
-		os.Exit(2)
-	}
 
 	var wg sync.WaitGroup
+	r := p.ctl.int("r")
 	wg.Add(r)
 	for i := 0; i < r; i++ {
 		go func(p parallel, origin host, wg *sync.WaitGroup) {

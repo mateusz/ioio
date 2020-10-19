@@ -1,10 +1,7 @@
 package program
 
 import (
-	"fmt"
 	"log"
-	"os"
-	"strconv"
 )
 
 type serial struct {
@@ -16,12 +13,8 @@ type serial struct {
 
 func (s serial) exec(origin host) {
 	log.Printf("[%s] Starting serial execution\n", s.topLevel.name)
-	r, err := strconv.Atoi(s.ctl["r"])
-	if err != nil {
-		fmt.Printf("[%s] Failed to convert ctl.r: %s\n", s.topLevel.name, err)
-		os.Exit(2)
-	}
 
+	r := s.ctl.int("r")
 	for i := 0; i < r; i++ {
 		s.prg.exec(origin)
 	}

@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/beefsack/go-astar"
 	"github.com/mateusz/ioio/architecture"
@@ -26,7 +27,7 @@ type pathVec struct {
 type pathNode struct {
 	x    int
 	y    int
-	cost float64
+	cost time.Duration
 	from pathVec
 	to   pathVec
 	pf   *Pathfinder
@@ -38,16 +39,15 @@ func (pn *pathNode) X() int {
 func (pn *pathNode) Y() int {
 	return pn.y
 }
-func (pn *pathNode) Cost() float64 {
+func (pn *pathNode) Cost() time.Duration {
 	return pn.cost
 }
 
 // Special handling for start, so that the pathfinder can get out
 type pathStartingNode struct {
-	x    int
-	y    int
-	cost float64 // starting node cost is not used, but provided for API consistency
-	pf   *Pathfinder
+	x  int
+	y  int
+	pf *Pathfinder
 }
 
 func (psn *pathStartingNode) X() int {
@@ -56,8 +56,9 @@ func (psn *pathStartingNode) X() int {
 func (psn *pathStartingNode) Y() int {
 	return psn.y
 }
-func (psn *pathStartingNode) Cost() float64 {
-	return psn.cost
+func (psn *pathStartingNode) Cost() time.Duration {
+	// Starting node duration is not used.
+	return 0.0
 }
 
 func NewPathfinder(w *piksele.World, cs []*architecture.Component) Pathfinder {
@@ -126,16 +127,13 @@ func (pf *Pathfinder) buildMap(cs []*architecture.Component) {
 
 func (pf *Pathfinder) convertToLinkages(c *architecture.Component) []*pathNode {
 	ns := make([]*pathNode, 0)
-	var latMs int
-	fmt.Sscanf(c.Lat, "%dms", &latMs)
-
 	linkages := strings.Split(c.Con, ",")
 	for _, l := range linkages {
 		if len(l) != 2 {
 			continue
 		}
 		n := &pathNode{
-			cost: float64(latMs),
+			cost: c.Lat,
 			from: letterToDir(l[0]),
 			to:   letterToDir(l[1]),
 			x:    c.X,
@@ -216,7 +214,7 @@ func (n *pathNode) PathNeighborCost(to astar.Pather) float64 {
 		return 10000000.0
 	}
 
-	return tn.cost
+	return float64(tn.cost)
 }
 
 func (n *pathNode) PathEstimatedCost(to astar.Pather) float64 {
@@ -271,7 +269,7 @@ func (n *pathStartingNode) PathNeighborCost(to astar.Pather) float64 {
 		return 10000000.0
 	}
 
-	return tn.cost
+	return float64(tn.cost)
 }
 
 func (n *pathStartingNode) PathEstimatedCost(to astar.Pather) float64 {

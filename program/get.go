@@ -11,7 +11,7 @@ import (
 )
 
 type pathNode interface {
-	Cost() float64
+	Cost() time.Duration
 }
 
 type get struct {
@@ -23,7 +23,7 @@ type get struct {
 }
 
 func (g get) exec(origin host) {
-	h := g.ctl["h"]
+	h := g.ctl.string("h")
 	dest := g.sim.findHostByName(h)
 	if dest == nil {
 		fmt.Printf("Host '%s' not found\n", h)
@@ -57,11 +57,11 @@ func (g get) transit(from host, to host) bool {
 		return false
 	}
 
-	totalCost := 0.0
+	var totalCost time.Duration
 	for e := path.Front(); e != nil; e = e.Next() {
 		pn, ok := e.Value.(pathNode)
 		if !ok {
-			fmt.Print("Non-pathNode found in path list\n")
+			fmt.Print("Non-pathNode found in path list (2)\n")
 			os.Exit(2)
 		}
 
@@ -80,10 +80,8 @@ func (g get) transit(from host, to host) bool {
 	}
 	g.sim.blipList.Give(b)
 
-	// Now traveling for as long as it takes, blip will take care of the actual animation
-	// Offsetting by 50 prevents the final blink that makes the dot jump to "from". I haven't
-	// debugged this one yet, and it seems to happen more on the return path.
-	time.Sleep(time.Duration(totalCost) * time.Millisecond)
+	// The blip is being animated in a goroutine.
+	time.Sleep(totalCost)
 
 	g.sim.blipList.Del(b)
 	return true

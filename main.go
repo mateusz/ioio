@@ -52,7 +52,7 @@ func main() {
 	gameBlips = graphics.NewBlipList(&gameWorld)
 
 	loadComponents()
-	gameSim = program.NewSimulation(fmt.Sprintf("%s/../prg3.yml", workDir), components, &gameWorld, &gameBlips)
+	gameSim = program.NewSimulation(fmt.Sprintf("%s/../examples/prg3.yml", workDir), components, &gameWorld, &gameBlips)
 
 	componentSprites, err = piksele.NewSpritesetFromTsx(fmt.Sprintf("%s/../assets", workDir), "components.tsx")
 	if err != nil {
@@ -179,9 +179,9 @@ func loadComponents() {
 			Sched:    anyProp("sched", o.Properties, tileDef.Properties),
 			Con:      anyProp("con", o.Properties, tileDef.Properties),
 			Name:     anyProp("name", o.Properties, tileDef.Properties),
-			Lat:      anyProp("lat", o.Properties, tileDef.Properties),
 		}
 
+		c.Lat, _ = time.ParseDuration(anyProp("lat", o.Properties, tileDef.Properties))
 		c.Proc, _ = strconv.Atoi(anyProp("proc", o.Properties, tileDef.Properties))
 		c.Cores, _ = strconv.Atoi(anyProp("cores", o.Properties, tileDef.Properties))
 		c.Queue, _ = strconv.Atoi(anyProp("queue", o.Properties, tileDef.Properties))

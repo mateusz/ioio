@@ -1,6 +1,10 @@
 package architecture
 
-import "github.com/faiface/pixel"
+import (
+	"time"
+
+	"github.com/faiface/pixel"
+)
 
 // component represents an active element in the simulation, such as wire or cpu.
 type Component struct {
@@ -11,7 +15,7 @@ type Component struct {
 	Con      string
 	Proc     int
 	Sched    string
-	Lat      string
+	Lat      time.Duration
 	SpriteID uint32
 	Cores    int
 	Queue    int

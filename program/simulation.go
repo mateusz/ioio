@@ -202,10 +202,20 @@ func (s *Simulation) parseCtl(rawCtl map[interface{}]interface{}) ctl {
 	for k, v := range rawCtl {
 		ks, ok := k.(string)
 		s.checkErr(ok, "Error parsing ctl, key not a string")
-		vs, ok := v.(string)
-		s.checkErr(ok, "Error parsing ctl, value not a string")
 
-		ctl[ks] = vs
+		// Ctl is stored internally as strings - convert to strings even if yml type is already correct.
+		// This is a bit weird, because we will have to parse it out later, but for now it's ok.
+		switch vs := v.(type) {
+		case int:
+			ctl[ks] = fmt.Sprintf("%d", vs)
+		case float64:
+			ctl[ks] = fmt.Sprintf("%.10f", vs)
+		case string:
+			ctl[ks] = vs
+		default:
+			s.checkErr(false, "Error parsing ctl, value of unexpected type")
+		}
+
 	}
 	return ctl
 }

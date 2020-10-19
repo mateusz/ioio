@@ -5,7 +5,7 @@ web_request:
   prg:
     - rps:
         ctl: 
-          r: "1"
+          r: 1
         prg:
         - get:
             ctl:
@@ -19,7 +19,7 @@ doom_request:
   prg:
     - rps:
         ctl: 
-          r: "1"
+          r: 1
         prg:
         - get:
             ctl:
@@ -33,7 +33,7 @@ other_request:
   prg:
     - rps:
         ctl: 
-          r: "0.29"
+          r: 0.29
         prg:
         - get:
             ctl:

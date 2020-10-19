@@ -11,11 +11,11 @@ web_request:
             ctl:
               h: web
             prg:
-            - c/100ms
+            - c/1000ms
 doom_request:
   ctl:
     h: arpanet
-    color: brown
+    color: lightblue
   prg:
     - rps:
         ctl: 
@@ -25,18 +25,18 @@ doom_request:
             ctl:
               h: doom
             prg:
-            - c/100ms
+            - c/1000ms
 other_request:
   ctl:
     h: arpanet
-    color: yellow
+    color: royalblue
   prg:
     - rps:
         ctl: 
-          r: "0.35"
+          r: "0.29"
         prg:
         - get:
             ctl:
               h: web
             prg:
-            - c/100ms
+            - c/1000ms
